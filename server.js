@@ -35,6 +35,7 @@ app.get('/todos/:id', function (req, res) {
 
 //POST /todos/
 app.post('/todos', function (req, res) {
+	//filter to just fields we want to keep whitelist
 	var body = _.pick(req.body, 'description', 'completed');
 
 	if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
@@ -42,10 +43,25 @@ app.post('/todos', function (req, res) {
 	}
 
 	body.id = todoNextId++;
-	body.description = body.description.trim();
+	body.description = body.description.trim(); //trim spaces
 	todos.push(body);
 
 	res.json(body);
+});
+
+//DELETE /todos/:id
+app.delete('/todos/:id', function (req, res){
+	var todoId = parseInt(req.params.id, 10);
+	//use underscore to remove todo item
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+
+	if(matchedTodo){
+		todos = _.without(todos, matchedTodo);
+		res.json(matchedTodo);
+	}else{
+		res.status(404).json({"error": "no todo found to delete with that ID"});
+	}
+
 });
 
 app.listen(PORT, function () {
